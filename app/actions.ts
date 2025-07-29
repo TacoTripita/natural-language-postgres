@@ -25,30 +25,8 @@ export const generateQuery = async (input: string) => {
 
     Only retrieval queries are allowed.
 
-    For things like industry, company names and other string fields, use the ILIKE operator and convert both the search term and the field to lowercase using LOWER() function. For example: LOWER(industry) ILIKE LOWER('%search_term%').
-
-    Note: select_investors is a comma-separated list of investors. Trim whitespace to ensure you're grouping properly. Note, some fields may be null or have only one value.
-    When answering questions about a specific field, ensure you are selecting the identifying column (ie. what is Vercel's valuation would select company and valuation').
-
-    The industries available are:
-    - healthcare & life sciences
-    - consumer & retail
-    - financial services
-    - enterprise tech
-    - insurance
-    - media & entertainment
-    - industrials
-    - health
-
-    If the user asks for a category that is not in the list, infer based on the list above.
-
-    Note: valuation is in billions of dollars so 10b would be 10.0.
-    Note: if the user asks for a rate, return it as a decimal. For example, 0.1 would be 10%.
-
-    If the user asks for 'over time' data, return by year.
-
-    When searching for UK or USA, write out United Kingdom or United States respectively.
-
+    For string fields, use the ILIKE operator and convert both the search term and the field to lowercase using LOWER() for case-insensitive matching. For example: LOWER(city) ILIKE LOWER('%search_term%').
+    
     EVERY QUERY SHOULD RETURN QUANTITATIVE DATA THAT CAN BE PLOTTED ON A CHART! There should always be at least two columns. If the user asks for a single column, return the column and the count of the column. If the user asks for a rate, return the rate as a decimal. For example, 0.1 would be 10%.
     `,
       prompt: `Generate the query necessary to retrieve the data the user wants: ${input}`,
@@ -85,7 +63,7 @@ export const runGenerateSQLQuery = async (query: string) => {
   try {
     data = await sql.query(query);
   } catch (e: any) {
-    if (e.message.includes('relation "unicorns" does not exist')) {
+    if (e.message.includes('relation "companies" does not exist')) {
       console.log(
         "Table does not exist, creating and seeding it with dummy data now...",
       );
@@ -108,6 +86,7 @@ export const explainQuery = async (input: string, sqlQuery: string) => {
         explanations: explanationsSchema,
       }),
       system: `You are a SQL (postgres) expert. Your job is to explain to the user write a SQL query you wrote to retrieve the data they asked for. The table schema is as follows:
+      
     companies (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
@@ -118,8 +97,7 @@ export const explainQuery = async (input: string, sqlQuery: string) => {
     state varchar
     );
 
-    When you explain you must take a section of the query, and then explain it. Each "section" should be unique. So in a query like: "SELECT * FROM unicorns limit 20", the sections could be "SELECT *", "FROM UNICORNS", "LIMIT 20".
-    If a section doesnt have any explanation, include it, but leave the explanation empty.
+    When you explain, break the query into unique sections (for example: "SELECT *", "FROM companies", "WHERE city = 'Chicago'") and explain each part concisely. If a section doesn't need an explanation, include it with an empty explanation.
 
     `,
       prompt: `Explain the SQL query you generated to retrieve the data the user wanted. Assume the user is not an expert in SQL. Break down the query into steps. Be concise.
