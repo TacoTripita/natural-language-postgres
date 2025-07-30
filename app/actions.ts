@@ -66,7 +66,7 @@ export const generateQuery = async (input: string) => {
    id SERIAL PRIMARY KEY, 
    name varchar 
    );
-
+ 
     specialized_services (
    id SERIAL PRIMARY KEY, 
    name varchar 
