@@ -74,7 +74,7 @@ export const generateQuery = async (input: string) => {
 
     Only retrieval queries are allowed.
 
-    When relevant, use joins to connect related tables (e.g., `analytics_shipper_events.search_city_id` joins to `cities.id`, or `analytics_companies.industry_id` joins to `analytics_industries.id`).
+    When relevant, use joins to connect related tables (e.g., 'analytics_shipper_events.search_city_id' joins to 'cities.id', or 'analytics_companies.industry_id' joins to 'analytics_industries.id').
 
     For string fields, use the ILIKE operator and convert both the search term and the field to lowercase using LOWER() for case-insensitive matching. For example: LOWER(city) ILIKE LOWER('%search_term%').
     
