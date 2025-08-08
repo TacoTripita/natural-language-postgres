@@ -32,7 +32,8 @@ export const generateQuery = async (input: string) => {
    search_freight_ids int8,
    search_truck_type_ids int8,
    search_shipment_type_ids int8,
-   search_specialized_service_ids int8
+   search_specialized_service_ids int8, 
+   time timestamp
    );
 
     analytics_companies (
@@ -159,7 +160,8 @@ export const explainQuery = async (input: string, sqlQuery: string) => {
    search_freight_ids int8,
    search_truck_type_ids int8,
    search_shipment_type_ids int8,
-   search_specialized_service_ids int8
+   search_specialized_service_ids int8, 
+   time timestamp
    );
 
     analytics_companies (
