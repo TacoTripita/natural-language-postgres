@@ -75,13 +75,6 @@ export const generateQuery = async (input: string) => {
 
     Only retrieval queries are allowed.
 
-    When relevant, use joins to connect related tables (example 'analytics_shipper_events.search_city_id' joins to 'cities.id', or 'analytics_companies.industry_id' joins to 'analytics_industries.id').
-
-    For string fields, use the ILIKE operator and convert both the search term and the field to lowercase using LOWER() for case-insensitive matching. For example: LOWER(city) ILIKE LOWER('%search_term%').
-    
-    EVERY QUERY SHOULD RETURN QUANTITATIVE DATA THAT CAN BE PLOTTED ON A CHART! There should always be at least two columns. If the user asks for a single column, return the column and the count of the column. If the user asks for a rate, return the rate as a decimal. For example, 0.1 would be 10%.
-
-    Avoid NULL values in output. Use COUNT, GROUP BY, and JOINs as needed to generate meaningful insights from the schema above.
     `,
       prompt: `Generate the query necessary to retrieve the data the user wants: ${input}`,
       schema: z.object({
@@ -201,7 +194,7 @@ export const explainQuery = async (input: string, sqlQuery: string) => {
    name varchar 
    );
 
-    When you explain, break the query into unique sections (for example: "SELECT *", "FROM companies", "WHERE city = 'Chicago'") and explain each part concisely, especially JOINs, filters, and GROUP BY logic. If a section doesn't need an explanation, include it with an empty explanation.
+   
 
     `,
       prompt: `Explain the SQL query you generated to retrieve the data the user wanted. Assume the user is not an expert in SQL. Break down the query into steps. Be concise.
