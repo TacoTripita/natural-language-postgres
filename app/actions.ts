@@ -11,72 +11,91 @@ export const generateQuery = async (input: string) => {
   try {
     const result = await generateObject({
       model: openai("gpt-4o"),
-      system: `You are a SQL (postgres) and data visualization expert. Your job is to help the user write a SQL query to retrieve the data they need. The table schema is as follows:
+      system: `You are a SQL (postgres) and data visualization expert. Your job is to help the user write a SQL query to retrieve the data they need. Below is the schema with explanations of tables, fields, and relationships. 
+      Use this schema knowledge to generate correct queries.
 
-      companies (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-    dot_number int4,
-    email TEXT,
-    power_units int4,
-    city varchar,
-    state varchar
-    );
+     ### companies 
+     Purpose: Stores basic information about carrier or broker companies.
+     Fields:
+    id SERIAL PRIMARY KEY: Unique identifier for each company.
+    name TEXT NOT NULL: Company name.
+    dot_number int4: US Department of Transportation number.
+    email TEXT: Contact email.
+    power_units int4: Number of power units (fleet size).
+    city varchar: City location of headquarters.
+    state varchar: State location of headquarters.
+    
 
-    analytics_shipper_events (
-   id SERIAL PRIMARY KEY,
-   analytics_company_id int8,
-   type varchar,
-   company_id int8,
-   search_city_id int8,
-   search_freight_ids int8,
-   search_truck_type_ids int8,
-   search_shipment_type_ids int8,
-   search_specialized_service_ids int8, 
-   time timestamp
-   );
+    ### analytics_shipper_events 
+    Purpose: Tracks shipper activity on the platform. Each row = 1 event.
+    Fields:
+   id SERIAL PRIMARY KEY: Event ID.
+   analytics_company_id int8 FOREIGN KEY → analytics_companies.id: Shipper who generated the event.
+   type varchar: Event type
+   company_id int8 FOREIGN KEY → companies.id: Carrier/Broker who received the event.
+   search_city_id int8 FOREIGN KEY → cities.id: City involved in a search.
+   search_freight_ids int8 FOREIGN KEY → freights.id: Freight types requested.
+   search_truck_type_ids int8 FOREIGN KEY → truck_types.id: Truck types requested.
+   search_shipment_type_ids int8 FOREIGN KEY → shipment_types.id: Shipment types requested.
+   search_specialized_service_ids int8 FOREIGN KEY → specialized_services.id: Specialized service requested. 
+   time timestamp: Event timestamp.
+   
 
-    analytics_companies (
-   id SERIAL PRIMARY KEY, 
-   name varchar,
-   industry_id int8
-   );
+    ### analytics_companies 
+    Purpose: Metadata for shipper companies tracked in analytics.
+    Fields: 
+   id SERIAL PRIMARY KEY: Unique identifier for each shipper.  
+   name varchar: Company name. 
+   industry_id int8 FOREIGN KEY → analytics_industries.id: Industry classification.
+   
 
-    analytics_industries (
-   id SERIAL PRIMARY KEY, 
-   name varchar
-   );
+    ### analytics_industries 
+    Purpose: Lookup table of industries.
+    Fields:
+   id SERIAL PRIMARY KEY: Unique identifier.
+   name varchar: Industry name.
+   
 
-    cities (
-   id SERIAL PRIMARY KEY, 
-   name varchar, 
-   state_code varchar
-   );
+    ### cities 
+    Purpose: Lookup for cities.
+    Fields:
+   id SERIAL PRIMARY KEY: Unique identifier.
+   name varchar: City name. 
+   state_code varchar: State abbreviation.
+   
 
-    freights (
-   id SERIAL PRIMARY KEY, 
-   name varchar 
-   );
+    ### freights 
+    Purpose: Lookup for freight types.
+    Fields:
+   id SERIAL PRIMARY KEY: Unique identifier.
+   name varchar: Freight type name.  
+   
 
-    truck_types (
-   id SERIAL PRIMARY KEY, 
-   name varchar 
-   );
+    ### truck_types 
+    Purpose: Lookup for truck types.
+    Fields:
+   id SERIAL PRIMARY KEY: Unique identifier.
+   name varchar: Truck type name.   
+  
 
-    shipment_types (
-   id SERIAL PRIMARY KEY, 
-   name varchar 
-   );
+    ### shipment_types 
+    Purpose: Lookup for shipment types.
+    Fields:
+   id SERIAL PRIMARY KEY: Unique identifier.
+   name varchar: Shipment type name.  
+   
  
-    specialized_services (
-   id SERIAL PRIMARY KEY, 
-   name varchar 
-   );
+    ### specialized_services
+    Purpose: Lookup for specialized services.
+    Fields:
+   id SERIAL PRIMARY KEY: Unique identifier.
+   name varchar: Specialized service name.
+   
 
     Only retrieval queries are allowed.
 
-    When relevant, use joins to connect related tables (example 'analytics_shipper_events.search_city_id' joins to 'cities.id', or 'analytics_companies.industry_id' joins to 'analytics_industries.id').
-
+    When relevant, use joins to connect related tables
+    
     For string fields, use the ILIKE operator and convert both the search term and the field to lowercase using LOWER() for case-insensitive matching. For example: LOWER(city) ILIKE LOWER('%search_term%').
     
     EVERY QUERY SHOULD RETURN QUANTITATIVE DATA THAT CAN BE PLOTTED ON A CHART! There should always be at least two columns. If the user asks for a single column, return the column and the count of the column. If the user asks for a rate, return the rate as a decimal. For example, 0.1 would be 10%.
@@ -142,65 +161,82 @@ export const explainQuery = async (input: string, sqlQuery: string) => {
       }),
       system: `You are a SQL (postgres) expert. Your job is to explain to the user write a SQL query you wrote to retrieve the data they asked for. The table schema is as follows:
       
-      companies (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-    dot_number int4,
-    email TEXT,
-    power_units int4,
-    city varchar,
-    state varchar
-    );
+     ### companies 
+     Purpose: Stores basic information about carrier or broker companies.
+     Fields:
+    id SERIAL PRIMARY KEY: Unique identifier for each company.
+    name TEXT NOT NULL: Company name.
+    dot_number int4: US Department of Transportation number.
+    email TEXT: Contact email.
+    power_units int4: Number of power units (fleet size).
+    city varchar: City location of headquarters.
+    state varchar: State location of headquarters.
+    
 
-    analytics_shipper_events (
-   id SERIAL PRIMARY KEY,
-   analytics_company_id int8,
-   type varchar,
-   company_id int8,
-   search_city_id int8,
-   search_freight_ids int8,
-   search_truck_type_ids int8,
-   search_shipment_type_ids int8,
-   search_specialized_service_ids int8, 
-   time timestamp
-   );
+    ### analytics_shipper_events 
+    Purpose: Tracks shipper activity on the platform. Each row = 1 event.
+    Fields:
+   id SERIAL PRIMARY KEY: Event ID.
+   analytics_company_id int8 FOREIGN KEY → analytics_companies.id: Shipper who generated the event.
+   type varchar: Event type
+   company_id int8 FOREIGN KEY → companies.id: Carrier/Broker who received the event.
+   search_city_id int8 FOREIGN KEY → cities.id: City involved in a search.
+   search_freight_ids int8 FOREIGN KEY → freights.id: Freight types requested.
+   search_truck_type_ids int8 FOREIGN KEY → truck_types.id: Truck types requested.
+   search_shipment_type_ids int8 FOREIGN KEY → shipment_types.id: Shipment types requested.
+   search_specialized_service_ids int8 FOREIGN KEY → specialized_services.id: Specialized service requested. 
+   time timestamp: Event timestamp.
+   
 
-    analytics_companies (
-   id SERIAL PRIMARY KEY, 
-   name varchar,
-   industry_id int8
-   );
+    ### analytics_companies 
+    Purpose: Metadata for shipper companies tracked in analytics.
+    Fields: 
+   id SERIAL PRIMARY KEY: Unique identifier for each shipper.  
+   name varchar: Company name. 
+   industry_id int8 FOREIGN KEY → analytics_industries.id: Industry classification.
+   
 
-    analytics_industries (
-   id SERIAL PRIMARY KEY, 
-   name varchar
-   );
+    ### analytics_industries 
+    Purpose: Lookup table of industries.
+    Fields:
+   id SERIAL PRIMARY KEY: Unique identifier.
+   name varchar: Industry name.
+   
 
-    cities (
-   id SERIAL PRIMARY KEY, 
-   name varchar, 
-   state_code varchar
-   );
+    ### cities 
+    Purpose: Lookup for cities.
+    Fields:
+   id SERIAL PRIMARY KEY: Unique identifier.
+   name varchar: City name. 
+   state_code varchar: State abbreviation.
+   
 
-    freights (
-   id SERIAL PRIMARY KEY, 
-   name varchar 
-   );
+    ### freights 
+    Purpose: Lookup for freight types.
+    Fields:
+   id SERIAL PRIMARY KEY: Unique identifier.
+   name varchar: Freight type name.  
+   
 
-    truck_types (
-   id SERIAL PRIMARY KEY, 
-   name varchar 
-   );
+    ### truck_types 
+    Purpose: Lookup for truck types.
+    Fields:
+   id SERIAL PRIMARY KEY: Unique identifier.
+   name varchar: Truck type name.   
+  
 
-    shipment_types (
-   id SERIAL PRIMARY KEY, 
-   name varchar 
-   );
-
-    specialized_services (
-   id SERIAL PRIMARY KEY, 
-   name varchar 
-   );
+    ### shipment_types 
+    Purpose: Lookup for shipment types.
+    Fields:
+   id SERIAL PRIMARY KEY: Unique identifier.
+   name varchar: Shipment type name.  
+   
+ 
+    ### specialized_services
+    Purpose: Lookup for specialized services.
+    Fields:
+   id SERIAL PRIMARY KEY: Unique identifier.
+   name varchar: Specialized service name.
 
     When you explain, break the query into unique sections (for example: "SELECT *", "FROM companies", "WHERE city = 'Chicago'") and explain each part concisely, especially JOINs, filters, and GROUP BY logic. If a section doesn't need an explanation, include it with an empty explanation.
 
